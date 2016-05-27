@@ -43,10 +43,10 @@ class TestStego(unittest.TestCase):
         img = [(255, 253, 252), (200, 156, 168), (134, 28, 33)]
         self.assertEqual(stego.bs2img(bs), img)
 
-    def test_enc__dec_info(self):
-        stego.enc_info(self.fp_cimg, self.fp_himg, self.fp_hstr, self.sec_key)
-        hid_img, hid_str = stego.dec_info(self.fp_cimg, self.sec_key)
-        himg = Image.open(self.fp_himg)
-        hstr = ''.join(open(self.fp_hstr).readlines())
-        self.assertEqual(hid_str, hstr)
-        self.assertEqual(himg, hid_img)
+    def test_replace_lsb(self):
+        i1, i2, b1, b2 = 64, 127, 1, 0
+        self.assertEqual(stego.replace_lsb(i1, b1), 65)
+        self.assertEqual(stego.replace_lsb(i2, b2), 126)
+
+if __name__ == '__main__':
+    unittest.main()
