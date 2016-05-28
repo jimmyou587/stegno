@@ -106,16 +106,14 @@ def enc_info(cover_img, hid_img, hid_text, sec_key):
     :param sec_key: Value of secret key
     :return: RGB values(Pixels) of Stego image
     """
-    cimg = Image.open(cover_img)
-    cov_pxs = cimg.getdata()
+    cov_pxs = cover_img.getdata()
 
     # hidden text cannot be longer than the number of pixels in cover image
     if len(hid_text) * 8 > len(cov_pxs):
         raise ValueError
 
     # get pixels of images
-    himg = Image.open(hid_img)
-    hid_pxs = himg.getdata()
+    hid_pxs = hid_img.getdata()
 
     # the number of pixels in hidden image cannot exceed one third of the number of pixels in cover image
     if len(hid_pxs) * 3 * 8 > len(cov_pxs):
@@ -138,15 +136,137 @@ def enc_info(cover_img, hid_img, hid_text, sec_key):
     ret = []
     for px in cov_pxs:
         new_gpx, new_bpx = px[1], px[2]
-        if px[0] ^ sk_bs[i % len_sk_bs]:
-            new_gpx = replace_lsb(px[1], hid_lg_bs[i])
-            if i >= len(hid_sh_bs):
-                new_bpx = replace_lsb(px[2], hid_sh_bs[i])
+        if px[0] ^ ord(sk_bs[i % len_sk_bs]):
+            new_gpx = replace_lsb(px[1], int(hid_lg_bs[i]))
+            if i < len(hid_sh_bs):
+                new_bpx = replace_lsb(px[2], int(hid_sh_bs[i]))
 
         else:
-            new_bpx = replace_lsb(px[2], hid_lg_bs[i])
-            if i >= len(hid_sh_bs):
-                new_gpx = replace_lsb(px[1], hid_sh_bs[i])
+            new_bpx = replace_lsb(px[2], int(hid_lg_bs[i]))
+            if i < len(hid_sh_bs):
+                new_gpx = replace_lsb(px[1], int(hid_sh_bs[i]))
         ret.append((px[0], new_gpx, new_bpx))
         i += 1
-    return ret
+        if i >= len_lg_bs:
+            break
+    return ret + list(cov_pxs)[i:]
+
+def dec_info(img, sec_key):
+    """
+    Extract the hidden information, image and/or text, from an image
+    :param img: Cover image
+    :param hid_img_size: A tuple representing the size of hidden image, eg. (100, 100)
+    :param hid_text_size: Number of characters in hidden text
+    :param sec_key: Secret key, usually is a word or sentence
+    :return:
+    """
+    # Open the Stego image
+    # c_img = Image.open(img)
+    # pxs = list(c_img.getdata())
+
+    # # Get secret key bit stream
+    # sec_bs = str2bs(sec_key)
+    # len_sec_bs = len(sec_bs)
+
+    # cnt = 0
+    # hid_bs = ''
+    # hid_img_len = hid_img_size[0] * hid_img_size[1] * 3 * 8
+    # hid_text_len = hid_text_size * 8
+    # hid_len = hid_img_len + hid_text_len
+
+    # while cnt < hid_len:
+
+    #     idx = cnt % len_sec_bs
+    #     px = pxs[cnt]
+    #     xor = int(sec_bs[idx]) ^ (px[0] & 1)
+
+    #     # 1
+    #     # Get LSB of Green and append to 1 bit hidden bit stream
+    #     if xor == 1:
+    #         hid_bs += str(px[1] & 1)
+
+    #     # 0
+    #     # Get LSB of Blue and append to 1 bit hidden bit stream
+    #     else:
+    #         hid_bs += str(px[2] & 1)
+    #     cnt += 1
+
+    # hid_img, hid_text = hid_bs[:hid_img_len], hid_bs[hid_img_len:]
+
+    # return hid_img, hid_text
+    return ((1,2))
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', help='Path of cover image')
+    parser.add_argument('-s', help='Secure key')
+    parser.add_argument('-hi', help='Path of hidden image')
+    parser.add_argument('-ht', help='Path of hidden text file')
+
+    args = parser.parse_args()
+
+    cover_img, hid_img, sec_key = Image.open(args.c), Image.open(args.hi), args.s
+    with open(args.ht) as ht_file:
+        hid_text = ht_file.read().strip()
+
+    new_pxs = enc_info(cover_img, hid_img, hid_text, sec_key)
+    img = Image.new('RGB', cover_img.size)
+    img.putdata(new_pxs)
+    img.save('-'.join([args.c.split('.')[0], 'new', '.png']))
+
+    # for i in xrange(1):
+    #     # file_name = 'text_' + str(i*10) + '.txt'
+    #     file_name = 'text_100.txt'
+    #     # img_name = 'Mercedes_' + str(i*10) + '.jpg'
+    #     img_name = 'Mercedes_50.jpg'
+    #     # stego_name = 'stego_' + str(i*10) + '.png'
+    #     stego_name = 'stego.png'
+    #     # output_name = 'output_' + str(i*10) + '.png'
+    #     output_name = 'output.png'
+    #     imgg = Image.open(img_name)
+    #     hid_size = imgg.size
+    #     # hid_size = (0, 0)
+
+    #     #print 'Hidden Text File: ' + file_name
+    #     #print 'Hidden Image File: ' + img_name
+    #     #print 'Hidden Image Size: ' + str(hid_size)
+    #     #print 'Stego Image File: ' + stego_name
+    #     #print 'Output Image File: ' + output_name
+
+    #     with open(file_name, 'r') as f:
+    #         ht = f.read()
+    #     f.close()
+    #     # ht = ''
+    #     start_time = datetime.datetime.now()
+
+    #     img = enc_info_2('Lenna.png', img_name, ht, 'Jimmy')
+
+    #     if img:
+    #         im = Image.new('RGB', (512, 512))
+    #         im.putdata(img)
+    #         im.save(stego_name)
+    #         hid_im, hid_text = dec_info_2(stego_name, hid_size, len(ht), 'Jimmy')
+
+    #         if len(hid_im) != 0:
+    #             pxs = list(get_rgb_bs(hid_im))
+
+    #             im = Image.new('RGB', hid_size)
+    #             im.putdata(pxs)
+    #             im.save(output_name)
+
+    #         st = ''.join(list(get_text_bs(hid_text)))
+
+    #         end_time = datetime.datetime.now()
+    #         td = end_time - start_time
+    #         # print td.seconds
+
+    #         mse = cal_mse('Lenna.png', stego_name)
+    #         max_i = 255
+    #         # print cal_psnr(max_i, mse)
+    #         with open('results.txt', 'a') as f:
+    #             f.write('Hidden Image: ' + str(hid_size) + '\t' + 'Hidden Text Length: ' + str(len(ht)) + '\t' + 'Time: ' +
+    #                     str(td.total_seconds()) + '\t' + 'PSNR: ' + str(cal_psnr(max_i, mse)) + '\n')
+    #         f.close()
+    #     else:
+    #         print('Hidden information is too much!')
