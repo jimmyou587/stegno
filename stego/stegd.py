@@ -65,9 +65,15 @@ def stegd(img, sec_key):
     else:
         hid_img, hid_text = bs2img(sh_bs), bs2str(lg_bs)
 
-    img = Image.new('RGB', (hm_wid, hm_len))
-    img.putdata(hid_img)
-    img.save('hidden_img.png')
+    print('length of hidden image: {ll}'.format(ll=len(hid_img)))
+    if len(hid_img) > 0:
+        img = Image.new('RGB', (hm_wid, hm_len))
+        img.putdata(hid_img)
+        img.save('hidden_img.png')
+
+    if len(hid_text) > 0:
+        with open('hidden_text.txt', 'w+') as ht:
+            ht.write(hid_text)
 
 def main():
     parser = argparse.ArgumentParser()
