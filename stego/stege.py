@@ -25,11 +25,19 @@ def stege(fp_cover_img, fp_hid_img, fp_hid_text, sec_key):
     except:
         raise IOError('Can\'t open cover image!')
 
+    # hidden text and image are initialized to empty strings
+    hid_img_width, hid_img_height = 0, 0
+    hid_pxs = []
+    hid_text, ht_bs, hm_bs = '', '', ''
+
     if fp_hid_img:
         try:
             with Image.open(fp_hid_img) as himg:
                 # get pixels of images
                 hid_pxs = [px[:3] for px in himg.getdata()]
+                hid_img_width = himg.size[0]
+                hid_img_height = himg.size[1]
+
         except:
             raise IOError('Can\'t open hidden image!')
         else:
@@ -53,14 +61,21 @@ def stege(fp_cover_img, fp_hid_img, fp_hid_text, sec_key):
     # encode the size of hidden image and text
     l = math.ceil(math.log(len(cov_pxs)//8, 2))
 
-    ht_len_bs, hm_wid_bs, hm_len_bs = bin(len(hid_text))[2:].zfill(l), bin(himg.size[0])[2:].zfill(l), bin(himg.size[1])[2:].zfill(l)
+    hm_width_bs = bin(hid_img_width)[2:].zfill(l)
+    hm_height_bs = bin(hid_img_height)[2:].zfill(l)
+    ht_len_bs = bin(len(hid_text))[2:].zfill(l)
 
+    # ret stores the pixels of encoded cover image
     ret = []
     i = 0
+
+    # hidden image and text sizes are encoded in the first l pixels
+    # text size is hidden in red, image size is hidden in blue and green
     for px in cov_pxs[:l]:
-        ret.append((replace_lsb(px[0], ht_len_bs[i]), replace_lsb(px[1], hm_wid_bs[i]), replace_lsb(px[2], hm_len_bs[i])))
+        ret.append((replace_lsb(px[0], ht_len_bs[i]), replace_lsb(px[1], hm_width_bs[i]), replace_lsb(px[2], hm_height_bs[i])))
         i += 1
 
+    # encode the content
     hid_lg_bs, hid_sh_bs = hm_bs, ht_bs
     if len(hid_text) > len(hid_pxs) * 3:
         hid_lg_bs, hid_sh_bs = ht_bs, hm_bs
@@ -88,7 +103,8 @@ def stege(fp_cover_img, fp_hid_img, fp_hid_text, sec_key):
         if i >= len_lg_bs:
             break
 
-    img = Image.new('sRGB', cimg.size)
+    # save encoded image
+    img = Image.new('RGB', cimg.size)
     img.putdata(ret + cov_pxs[i+l:])
     img.save('-'.join([fp_cover_img.split('.')[0], 'encoded.png']))
 
