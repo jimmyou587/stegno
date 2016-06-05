@@ -1,0 +1,81 @@
+from PIL import Image
+import math
+import argparse
+from stego.utility import *
+
+def stegd(img, sec_key):
+    """
+    Extract the hidden information, image and/or text, from an image
+    :param img: Cover image
+    :param hid_img_size: A tuple representing the size of hidden image, eg. (100, 100)
+    :param hid_text_size: Number of characters in hidden text
+    :param sec_key: Secret key, usually is a word or sentence
+    :return:
+    """
+    # Open the Stego image
+    with Image.open(img) as cover_img:
+        cov_pxs = list(cover_img.getdata())
+
+    #### Get size of hidden information
+    l = math.ceil(math.log(len(cov_pxs)//8, 2))
+
+    hm_wid = hm_len = ht_len = 0
+    for px in cov_pxs[:l]:
+        # Get size of hidden image
+        hm_wid = 2 * hm_wid + (px[1] & 1)
+        hm_len = 2 * hm_len + (px[2] & 1)
+
+        # Get size of hidden text
+        ht_len = 2 * ht_len + (px[0] & 1)
+
+    # Get secret key bit stream
+    sec_bs = str2bs(sec_key)
+    len_sec_bs = len(sec_bs)
+
+    #### Start to extract hidden information bit by bit
+    cnt, i, ret = 0, 0, []
+    
+    len_lg_bs = max(hm_wid * hm_len * 3 * 8, ht_len * 8)
+    len_sh_bs = min(hm_wid * hm_len * 3 * 8, ht_len * 8)
+
+    sk_bs = [int(k) for k in str2bs(sec_key)]
+    len_sk_bs = len(sk_bs)
+
+    lg_bs, sh_bs = [], []
+    for px in cov_pxs[l:]:
+
+        if px[0] ^ sk_bs[i% len_sk_bs]:
+            lg_bs.append(px[1] & 1)
+            if i < len_sh_bs:
+                sh_bs.append(px[2] & 1)
+
+        else:
+            lg_bs.append(px[2] & 1)
+            if i < len_sh_bs:
+                sh_bs.append(px[1] & 1)
+        i += 1
+        if i >= len_lg_bs:
+            break
+
+    lg_bs = ''.join([str(c) for c in lg_bs])
+    sh_bs = ''.join([str(c) for c in sh_bs])
+
+    if hm_wid * hm_len * 3 > ht_len:
+        hid_img, hid_text = bs2img(lg_bs), bs2str(sh_bs)
+    else:
+        hid_img, hid_text = bs2img(sh_bs), bs2str(lg_bs)
+
+    img = Image.new('RGB', (hm_wid, hm_len))
+    img.putdata(hid_img)
+    img.save('hidden_img.png')
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', help='Path of cover image')
+    parser.add_argument('-s', help='Secure key')
+
+    args = parser.parse_args()
+    stegd(args.c, args.s)
+
+if __name__ == '__main__':
+    main()
