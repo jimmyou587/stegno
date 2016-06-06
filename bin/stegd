@@ -1,0 +1,4 @@
+from stego import stegd
+
+if __name__ == '__main__':
+    stegd.main()
