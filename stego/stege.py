@@ -29,6 +29,9 @@ def stege(fp_cover_img, fp_hid_img, fp_hid_text, sec_key):
     hid_pxs = []
     hid_text, ht_bs, hm_bs = '', '', ''
 
+    # encode the size of hidden image and text
+    l = math.ceil(math.log(len(cov_pxs)/8, 2))
+
     if fp_hid_img:
         try:
             with Image.open(fp_hid_img) as himg:
@@ -41,8 +44,8 @@ def stege(fp_cover_img, fp_hid_img, fp_hid_text, sec_key):
             raise IOError('Can\'t open hidden image!')
         else:
             # the number of pixels in hidden image cannot exceed one third of the number of pixels in cover image
-            if len(hid_pxs) * 3 * 8 > len(cov_pxs):
-                raise ValueError
+            if len(hid_pxs) * 3 * 8 > len(cov_pxs) - l:
+                raise ValueError('Hidden image is too big!')
             hm_bs = ''.join([bin(val)[2:].zfill(8) for px in hid_pxs for val in px])
 
     if fp_hid_text:
@@ -53,12 +56,10 @@ def stege(fp_cover_img, fp_hid_img, fp_hid_text, sec_key):
             raise IOError('Can\'t open hidden text file!')
         else:
             # hidden text cannot be longer than the number of pixels in cover image
-            if len(hid_text) * 8 > len(cov_pxs):
-                raise ValueError
+            print('length: {leng} {ln}'.format(leng=len(hid_text) * 8, ln=len(cov_pxs) - l))
+            if len(hid_text) * 8 > len(cov_pxs) - l:
+                raise ValueError('Hidden text is too long!')
             ht_bs = str2bs(hid_text)
-
-    # encode the size of hidden image and text
-    l = math.ceil(math.log(len(cov_pxs)//8, 2))
 
     hm_width_bs = bin(hid_img_width)[2:].zfill(l)
     hm_height_bs = bin(hid_img_height)[2:].zfill(l)
