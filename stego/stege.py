@@ -1,8 +1,9 @@
-from PIL import Image
-import math
 import argparse
+import math
+
+from PIL import Image
+
 from stego.utility import *
-from contextlib import closing
 
 def stege(fp_cover_img, fp_hid_img, fp_hid_text, sec_key):
     """Encrypt image and/or text into cover image serially. With this method, hidden image and hidden text bit streams are concatenated before being encrypted.
@@ -56,7 +57,6 @@ def stege(fp_cover_img, fp_hid_img, fp_hid_text, sec_key):
             raise IOError('Can\'t open hidden text file!')
         else:
             # hidden text cannot be longer than the number of pixels in cover image
-            print('length: {leng} {ln}'.format(leng=len(hid_text) * 8, ln=len(cov_pxs) - l))
             if len(hid_text) * 8 > len(cov_pxs) - l:
                 raise ValueError('Hidden text is too long!')
             ht_bs = str2bs(hid_text)
