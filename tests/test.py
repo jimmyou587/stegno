@@ -2,12 +2,23 @@ import unittest
 from stego import utility, stege, stegd
 import os
 from PIL import Image
+import warnings
+from functools import wraps
+
+def ignore_resource_warning(func):
+    @wraps(func)
+    def test_wrapper(self):
+        with warnings.catch_warnings(record=True):
+            warnings.simplefilter("ignore")
+            func(self)
+    return test_wrapper
 
 class TestStego(unittest.TestCase):
+
     def setUp(self):
         cur_dir = os.path.dirname(os.path.abspath(__file__))
         self.fp_cimg = os.path.join(cur_dir, 'corvette.png')
-        self.fp_himg = os.path.join(cur_dir, 'lenna-256.png')
+        self.fp_himg = os.path.join(cur_dir, 'arsenal.png')
         self.fp_ht   = os.path.join(cur_dir, 'test_file.txt')
         self.sec_key = 'Very Secure!'
         pass
@@ -59,11 +70,13 @@ class TestStego(unittest.TestCase):
         else:
             self.fail()
 
+    @ignore_resource_warning
     def test_enc_no_himg_no_ht(self):
         '''
             hidden image empty
         '''
         himg, ht = None, None
+
         try:
             stege.stege(self.fp_cimg, himg, ht, self.sec_key)
         except ValueError as e:
@@ -71,17 +84,27 @@ class TestStego(unittest.TestCase):
         else:
             self.fail()
 
-    def test_enc_dec(self):
+
+    @ignore_resource_warning
+    def test_enc_dec_hid_text_only(self):
         stege.stege(self.fp_cimg, None, self.fp_ht, self.sec_key)
         enc_img = '-'.join([self.fp_cimg.split('.')[0], 'encoded.png'])
         stegd.stegd(enc_img, self.sec_key)
+        fp_dec_text = 'hidden_text.txt'
+        with open(fp_dec_text) as dec_ht:
+            with open(self.fp_ht) as orig_ht:
+                self.assertEqual(dec_ht.read().strip(), orig_ht.read().strip())
+
+    @ignore_resource_warning
+    def test_enc_dec_hid_img_only(self):
+        stege.stege(self.fp_cimg, self.fp_himg, None, self.sec_key)
+        enc_img = '-'.join([self.fp_cimg.split('.')[0], 'encoded.png'])
+        stegd.stegd(enc_img, self.sec_key)
+
         fp_new_img = 'hidden_img.png'
         new_img = Image.open(fp_new_img)
         hid_img = Image.open(self.fp_himg)
+        img = hid_img.convert('RGB')
 
-        hid_pxs = [px[:3] for px in hid_img.getdata()]
-        for pxs in zip(new_img.getdata(), hid_pxs):
+        for pxs in zip(new_img.getdata(), img.getdata()):
             self.assertEqual(pxs[0], pxs[1])
-
-if __name__ == '__main__':
-    unittest.main()

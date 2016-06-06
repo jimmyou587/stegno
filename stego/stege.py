@@ -2,11 +2,10 @@ from PIL import Image
 import math
 import argparse
 from stego.utility import *
+from contextlib import closing
 
 def stege(fp_cover_img, fp_hid_img, fp_hid_text, sec_key):
-    """
-    Encrypt image and/or text into cover image serially.
-    With this method, hidden image and hidden text bit streams are concatenated before being encrypted.
+    """Encrypt image and/or text into cover image serially. With this method, hidden image and hidden text bit streams are concatenated before being encrypted.
     :param fp_cover_img: Path of cover image
     :param fp_hid_img: Path of hidden image
     :param fp_hid_text: Value of hidden text
@@ -20,8 +19,8 @@ def stege(fp_cover_img, fp_hid_img, fp_hid_text, sec_key):
         raise ValueError('Nothing to hide!')
 
     try:
-        with Image.open(fp_cover_img) as cimg:
-            cov_pxs = list(cimg.getdata())
+        cimg = Image.open(fp_cover_img)
+        cov_pxs = list(cimg.getdata())
     except:
         raise IOError('Can\'t open cover image!')
 

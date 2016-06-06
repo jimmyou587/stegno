@@ -2,10 +2,10 @@ from PIL import Image
 import math
 import argparse
 from stego.utility import *
+from contextlib import closing
 
 def stegd(img, sec_key):
-    """
-    Extract the hidden information, image and/or text, from an image
+    """Extract the hidden information, image and/or text, from an image
     :param img: Cover image
     :param hid_img_size: A tuple representing the size of hidden image, eg. (100, 100)
     :param hid_text_size: Number of characters in hidden text
@@ -13,7 +13,7 @@ def stegd(img, sec_key):
     :return:
     """
     # Open the Stego image
-    with Image.open(img) as cover_img:
+    with closing(Image.open(img)) as cover_img:
         cov_pxs = list(cover_img.getdata())
 
     #### Get size of hidden information
@@ -65,7 +65,6 @@ def stegd(img, sec_key):
     else:
         hid_img, hid_text = bs2img(sh_bs), bs2str(lg_bs)
 
-    print('length of hidden image: {ll}'.format(ll=len(hid_img)))
     if len(hid_img) > 0:
         img = Image.new('RGB', (hm_wid, hm_len))
         img.putdata(hid_img)
