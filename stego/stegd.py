@@ -12,9 +12,16 @@ def stegd(img, sec_key):
     :param sec_key: Secret key, usually is a word or sentence
     :return:
     """
-    # Open the Stego image
-    with closing(Image.open(img)) as cover_img:
-        cov_pxs = list(cover_img.getdata())
+
+    try:
+        # Open the Stego image
+        with Image.open(img) as cover_img:
+            cov_pxs = list(cover_img.getdata())
+    except:
+        raise IOError('Can\'t open image!')
+
+    if not sec_key:
+        raise ValueError('Secure Key is needed!')
 
     #### Get size of hidden information
     l = math.ceil(math.log(len(cov_pxs)//8, 2))
