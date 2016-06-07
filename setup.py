@@ -1,22 +1,19 @@
 from setuptools import setup
 
-with open('README.md') as readme:
-    description = readme.read()
+def readme():
+    with open('README.rst') as f:
+        return f.read()
 
 setup(
     name='Stego',
-    version='0.0.1',
-    description='Hide your secret',
+    version='0.0.2',
+    description=readme,
     author='Linqiang Ouyang (Jimmy)',
     author_email='jimmyou587@gmail.com',
     packages=['stego'],
     license='MIT',
-    # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
+    url='https://github.com/jimmyou587/stegno',
     classifiers=[
-        # How mature is this project? Common values are
-        #   3 - Alpha
-        #   4 - Beta
-        #   5 - Production/Stable
         'Development Status :: 3 - Alpha',
 
         # Indicate who your project is intended for
