@@ -1,20 +1,21 @@
 import argparse
 import math
+import os
 
 from PIL import Image
 
 from stego.utility import *
 
-def stegd(img, sec_key):
+def stegd(cover_img, sec_key):
     """Extract the hidden information, image and/or text, from an image
-    :param img: Cover image
+    :param cover_img: Path to cover image
     :param sec_key: Secret key, usually is a word or sentence
     """
 
     try:
         # Open the Stego image
-        with Image.open(img) as cover_img:
-            cov_pxs = list(cover_img.getdata())
+        with Image.open(cover_img) as cimg:
+            cov_pxs = list(cimg.getdata())
     except:
         raise IOError('Can\'t open image!')
 
@@ -22,7 +23,7 @@ def stegd(img, sec_key):
         raise ValueError('Secure Key is needed!')
 
     #### Get size of hidden information
-    l = math.ceil(math.log(len(cov_pxs)//8, 2))
+    l = int(math.ceil(math.log(len(cov_pxs)//8, 2)))
 
     hm_wid = hm_len = ht_len = 0
     for px in cov_pxs[:l]:
@@ -73,10 +74,10 @@ def stegd(img, sec_key):
     if len(hid_img) > 0:
         img = Image.new('RGB', (hm_wid, hm_len))
         img.putdata(hid_img)
-        img.save('hidden_img.png')
+        img.save(os.path.join(os.path.dirname(cover_img), 'hidden_img.png'))
 
     if len(hid_text) > 0:
-        with open('hidden_text.txt', 'w+') as ht:
+        with open(os.path.join(os.path.dirname(cover_img), 'hidden_text.txt'), 'w+') as ht:
             ht.write(hid_text)
 
 def main():

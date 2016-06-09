@@ -31,7 +31,7 @@ def stege(fp_cover_img, fp_hid_img, fp_hid_text, sec_key):
     hid_text, ht_bs, hm_bs = '', '', ''
 
     # encode the size of hidden image and text
-    l = math.ceil(math.log(len(cov_pxs)/8, 2))
+    l = int(math.ceil(math.log(len(cov_pxs)/8, 2)))
 
     if fp_hid_img:
         try:

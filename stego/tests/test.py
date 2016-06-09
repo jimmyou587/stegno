@@ -6,7 +6,7 @@ import warnings
 from functools import wraps
 import math
 
-cur_dir = os.path.dirname(os.path.abspath(__file__))
+CUR_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def ignore_resource_warning(func):
     @wraps(func)
@@ -19,10 +19,10 @@ def ignore_resource_warning(func):
 class TestStego(unittest.TestCase):
 
     def setUp(self):
-        self.fp_cimg = os.path.join(cur_dir, 'arsenal.png')
-        self.fp_himg = os.path.join(cur_dir, 'lenna_4998.png')
+        self.fp_cimg = os.path.join(CUR_DIR, 'arsenal.png')
+        self.fp_himg = os.path.join(CUR_DIR, 'lenna_4998.png')
         print(self.fp_himg)
-        self.fp_ht   = os.path.join(cur_dir, 'test_file_14998.txt')
+        self.fp_ht   = os.path.join(CUR_DIR, 'test_file_14998.txt')
         self.sec_key = 'Very Secure!'
         pass
 
@@ -93,7 +93,7 @@ class TestStego(unittest.TestCase):
         stege.stege(self.fp_cimg, None, self.fp_ht, self.sec_key)
         enc_img = '-'.join([self.fp_cimg.split('.')[0], 'encoded.png'])
         stegd.stegd(enc_img, self.sec_key)
-        fp_dec_text = 'hidden_text.txt'
+        fp_dec_text = os.path.join(CUR_DIR, 'hidden_text.txt')
         with open(fp_dec_text) as dec_ht:
             with open(self.fp_ht) as orig_ht:
                 self.assertEqual(dec_ht.read().strip(), orig_ht.read().strip())
@@ -104,7 +104,7 @@ class TestStego(unittest.TestCase):
         enc_img = '-'.join([self.fp_cimg.split('.')[0], 'encoded.png'])
         stegd.stegd(enc_img, self.sec_key)
 
-        fp_new_img = 'hidden_img.png'
+        fp_new_img = os.path.join(CUR_DIR, 'hidden_img.png')
         new_img = Image.open(fp_new_img)
         hid_img = Image.open(self.fp_himg)
         img = hid_img.convert('RGB')
@@ -118,7 +118,7 @@ class TestStego(unittest.TestCase):
         enc_img = '-'.join([self.fp_cimg.split('.')[0], 'encoded.png'])
         stegd.stegd(enc_img, self.sec_key)
 
-        fp_new_img = 'hidden_img.png'
+        fp_new_img = os.path.join(CUR_DIR, 'hidden_img.png')
         new_img = Image.open(fp_new_img)
         hid_img = Image.open(self.fp_himg)
         img = hid_img.convert('RGB')
@@ -126,7 +126,7 @@ class TestStego(unittest.TestCase):
         for pxs in zip(new_img.getdata(), img.getdata()):
             self.assertEqual(pxs[0], pxs[1])
 
-        fp_dec_text = 'hidden_text.txt'
+        fp_dec_text = os.path.join(CUR_DIR, 'hidden_text.txt')
         with open(fp_dec_text) as dec_ht:
             with open(self.fp_ht) as orig_ht:
                 self.assertEqual(dec_ht.read().strip(), orig_ht.read().strip())
@@ -151,8 +151,8 @@ class TestStego(unittest.TestCase):
     def test_stege_max_space(self):
         # 1873
         # 25 * 25
-        fp_himg_big = os.path.join(cur_dir, 'lenna_5000.png')
-        fp_ht_long  = os.path.join(cur_dir, 'test_file_14999.txt')
+        fp_himg_big = os.path.join(CUR_DIR, 'lenna_5000.png')
+        fp_ht_long  = os.path.join(CUR_DIR, 'test_file_14999.txt')
 
         try:
             stege.stege(self.fp_cimg, self.fp_himg, fp_ht_long, self.sec_key)
