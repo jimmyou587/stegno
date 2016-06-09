@@ -20,12 +20,12 @@ You might be wondering "How secure can it be after you share it?" You can see I 
 
 2. To encode the hidden information to the cover image, run
       ```
-      Stege -s SECURE_KEY -c PATH_TO_COVER_IMAGE -hi PATH_TO_HIDDEN_IMAGE -ht PATH_TO_HIDDEN_TEXT_FILE
+      stege -s SECURE_KEY -c PATH_TO_COVER_IMAGE -hi PATH_TO_HIDDEN_IMAGE -ht PATH_TO_HIDDEN_TEXT_FILE
       ```
       
 3. To decode the hidden information from the cover iamge, run
       ```
-      Stegd -s SECURE_KEY -c PATH_TO_COVER_IMAGE
+      stegd -s SECURE_KEY -c PATH_TO_COVER_IMAGE
       ```
    then an image named hidden_image.png and a file named hidden_file.txt will be generated in your current directory
 
