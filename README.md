@@ -5,8 +5,8 @@ A cool application to hide and extract images and text into another image withou
 It's all about security. If you want to send images and/or text secretly via the web, this is the way to go. 
 
 # how to install
-pip install stego
-...
+pip install stego <br />
+... <br />
 easy_install stego
 
 # how to run
