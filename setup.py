@@ -6,7 +6,7 @@ def readme():
 
 setup(
     name='Stego',
-    version='0.0.2',
+    version='0.0.5',
     description=readme,
     author='Linqiang Ouyang (Jimmy)',
     author_email='jimmyou587@gmail.com',
@@ -33,7 +33,7 @@ setup(
         'Programming Language :: Python :: 3.5',
     ],
     # What does your project relate to?
-    keywords='python, steganography',
+    keywords='python, steganography, image processing, security',
     install_requires=['pillow'],
     scripts=['bin/stege', 'bin/stegd'],
     test_suite='nose.collector',
